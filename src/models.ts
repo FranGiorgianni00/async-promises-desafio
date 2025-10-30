@@ -1,35 +1,46 @@
-import * as jsonfile from "jsonfile";
+ import * as jsonfile from "jsonfile";
 
-class Contact {
-  id?: number = undefined;
-  name: string = "";
+
+export interface Contact {
+  id: number;
+  name: string;
 }
 
-class ContactsCollection {
+export class ContactsCollection {
   data: Contact[] = [];
-  load() {
-    // usar la version Async (readFile)
-    const json = jsonfile.readFileSync(__dirname + "/contacts.json");
-    this.data = json;
+
+  async load() {
+    const filePath = __dirname + "/contacts.json";
+    console.log("Cargando desde:", filePath);
+    try {
+      this.data = await jsonfile.readFile(filePath);
+    } catch (error) {
+      console.error("Error al cargar los contactos:", error);
+      this.data = [];
+    }
   }
-  getAll() {
-    return this.data;
+
+  async save() {
+    const filePath = __dirname + "/contacts.json";
+    console.log("Guardando en:", filePath);
+    try {
+      await jsonfile.writeFile(filePath, this.data);
+      console.log("Contactos guardados correctamente.");
+    } catch (error) {
+      console.error("Error al guardar los contactos:", error);
+      throw error;
+    }
   }
+
   addOne(contact: Contact) {
     this.data.push(contact);
   }
-  save() {
-    // usar la version Async (writeFIle)
-    jsonfile.writeFileSync(__dirname + "/contacts.json", this.data);
-  }
-  getOneById(id) {
-    const encontrado = this.data.find((contacto) => {
-      if (contacto?.id == id) {
-        return true;
-      }
-    });
 
-    return encontrado;
+  getAll() {
+    return this.data;
+  }
+
+  getOneById(id: number) {
+    return this.data.find((c) => c.id === id);
   }
 }
-export { ContactsCollection, Contact };
